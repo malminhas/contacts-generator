@@ -54,14 +54,14 @@ Installation into a virtualenv as follows:
 ```
 $ git clone https://github.com/malminhas/contacts-generator vcards
 $ cd vcards
-$ mkvirtualenv vcards
+$ mkvirtualenv -p python3.4 vcards
 $ workon vcards
 (vcards) $ pip install --upgrade pip
 (vcards) $ pip install docopt, requests, vobject, jsonpickle
 (vcards) $ pip freeze -l
 docopt==0.6.2
 jsonpickle==0.9.3
-python-dateutil==2.5.0
+python-dateutil==2.5.2
 requests==2.9.1
 six==1.10.0
 vobject==0.9.2
