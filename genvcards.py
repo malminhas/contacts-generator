@@ -184,7 +184,7 @@ def vcardToJson(vcard):
     d={}
     pvcf = vobject.readOne(vcard)
     attrvals = pvcf.contents
-    for k,v in attrvals.iteritems():
+    for k,v in attrvals.items():
         if k in ['email','tel','url','addr']:
             vals = []
             for val in v:
@@ -331,7 +331,7 @@ def generateFakeContact(**kwargs):
     #       output=json&
     #       human=true
     params=["app_id=%s" % APP_ID,"app_key=%s" % APP_KEY,"output=json"]
-    for k,v in kwargs.iteritems():
+    for k,v in kwargs.items():
         k = k.replace('_','-')
         params.append("%s=%s" % (k,v))
     if not os.path.exists('.app_id'):
@@ -372,7 +372,7 @@ def translateFakeFields(d):
     for k,v in d.items():
         tkey = tr.get(k)
         if tkey and len(d.get(k)) > 0:
-            contact[tkey] = d.pop(k)
+            contact[tkey] = d.get(k) # don't pop, just get
     return contact
 
 
