@@ -97,36 +97,39 @@ class TestFakes:
         # 1. Test that adding a single fake contact using built-in fake
         contacts = addToContactDb(1)
         fullname0,contact0 = contacts[0]
-        # 2. Test generateFakeContact() correctly raises exceptions with missing local credential files
-        os.rename('.app_id','.app_id.move')
-        print(os.path.exists('.app_id.move'))
-        # Use pytest.raises for testing exceptions your own code is deliberately raising:
-        with pytest.raises(gv.AppIdNotFoundException):
+        if os.path.exists('.app_id') and os.path.exists('.app_key'):
+            # 2. Test generateFakeContact() correctly raises exceptions with missing local credential files
+            os.rename('.app_id','.app_id.move')
+            print(os.path.exists('.app_id.move'))
+            # Use pytest.raises for testing exceptions your own code is deliberately raising:
+            with pytest.raises(gv.AppIdNotFoundException):
+                fullname1,contact1 = gv.generateFakeContact(country='gb', name_set='en', gender='random', minimum_age=19,
+                                                        maximum_age=85, human='true',callapi=True)
+            os.rename('.app_id.move','.app_id')
+            os.rename('.app_key','.app_key.move')
+            with pytest.raises(gv.AppKeyNotFoundException):
+                fullname1,contact1 = gv.generateFakeContact(country='gb', name_set='en', gender='random', minimum_age=19,
+                                                        maximum_age=85, human='true',callapi=True)
+            os.rename('.app_key.move','.app_key')
+            # 3. Test generateFakeContact() works on happy path - assumes credential files are valid
             fullname1,contact1 = gv.generateFakeContact(country='gb', name_set='en', gender='random', minimum_age=19,
                                                     maximum_age=85, human='true',callapi=True)
-        os.rename('.app_id.move','.app_id')
-        os.rename('.app_key','.app_key.move')
-        with pytest.raises(gv.AppKeyNotFoundException):
-            fullname1,contact1 = gv.generateFakeContact(country='gb', name_set='en', gender='random', minimum_age=19,
-                                                    maximum_age=85, human='true',callapi=True)
-        os.rename('.app_key.move','.app_key')
-        # 3. Test generateFakeContact() works on happy path - assumes credential files are valid
-        fullname1,contact1 = gv.generateFakeContact(country='gb', name_set='en', gender='random', minimum_age=19,
-                                                maximum_age=85, human='true',callapi=True)
-        assert(fullname1)
-        assert(contact1)
-        assert(fullname0 != fullname1)
-        fakes = gv.readFakeContactDb(TESTDB)
-        fakes.append((fullname1,contact1))
-        gv.writeFakeContactDb(fakes,TESTDB)
-        assert (isinstance(fakes, list))
-        assert (len(fakes) == 2)
-        fname, cont = gv.getFakeContact(0, fakes)
-        assert (fullname0 == fname)
-        assert (contact0 == cont)
-        fname, cont = gv.getFakeContact(1, fakes)
-        assert (fullname1 == fname)
-        assert (contact1 == cont)
+            assert(fullname1)
+            assert(contact1)
+            assert(fullname0 != fullname1)
+            fakes = gv.readFakeContactDb(TESTDB)
+            fakes.append((fullname1,contact1))
+            gv.writeFakeContactDb(fakes,TESTDB)
+            assert (isinstance(fakes, list))
+            assert (len(fakes) == 2)
+            fname, cont = gv.getFakeContact(0, fakes)
+            assert (fullname0 == fname)
+            assert (contact0 == cont)
+            fname, cont = gv.getFakeContact(1, fakes)
+            assert (fullname1 == fname)
+            assert (contact1 == cont)
+        else:
+            print('WARNING: .app_id or .app_key not found!')
         emptyContactDb()
 
 class TestGenerate:
@@ -177,5 +180,6 @@ class TestParse:
             # Convert each vcard to json
             jpegfile = None
             contact = gv.vcardToJson(vcard)
-            print(gv.prettyprintJson(contact))
+            print('----- CONTACT %d (%s) -----' % (i,contact.get('n')))
+            print(gv.prettyprintJson(contact)[:64] + "\n...")
             s = gv.generateVcard(contact, vcardfile, jpegfile, i, vcardfiles.index(vcardfile),pprint=False)
